@@ -1,13 +1,247 @@
 <!DOCTYPE html>
 
+
 <head>
+    <script src="https://d3js.org/d3.v6.min.js"></script>
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/milligram/1.4.1/milligram.css"> 
+    <link rel="stylesheet" type="text/css" href="style.css" />
+    <!-- <link rel="stylesheet" href="//rawgithub.com/Caged/d3-tip/master/examples/example-styles.css"> -->
 
 </head>
 
 
 <body>
+
+    <div class="container">
+        <h2>
+            Population in European countries
+        </h2>
+
+        <div class="city-count"></div>
+        <div class="population-plot"></div>
     
+    </div>
+
+    <div class="container">
+        <h2>
+            World's Tallest Buildings
+        </h2>
+
+        <div class="column">
+            <div class="bar-chart"></div>
+        </div>
+
+        <div class="column">
+            <div class="column">
+                <img class="image" />
+            </div>
+            <div class="column">
+                <h4 class="building-name"></h4>
+                <table>
+                    <tbody>
+                        <tr>
+                            <td>Height</td>
+                            <td><span class="height"></span> ft</td>
+                        </tr>
+                        <tr>
+                            <td>City</td>
+                            <td><span class="city"></span></td>
+                        </tr>
+                        ...
+                    </tbody>
+                </table>
+            </div>
+        
+        </div>
+        
+            
+        </div>
+        
+    
+    </div>
+
+
+    
+
 </body>
+
+<script>
+
+
+   d3.csv('cities.csv', d => {
+        return {
+            ...d, // spread operator
+            eu: d.eu === 'true', // convert to boolean
+            population: +d.population,
+            x: +d.x,
+            y: +d.y,
+        }
+    }).then(data => {
+        //console.log('cities', data);
+
+
+
+        let europe = data.filter(function (d) {
+            return d.eu == true;
+        })
+
+        // console.log(europe)
+
+        d3.select('.city-count')
+            .text("Number of EU cities: " + europe.length);
+
+
+        const width = 700;
+        const height = 550;
+        const svg = d3.select('.population-plot')
+            .append('svg')
+            .attr('width', width)
+            .attr('height', height)
+
+
+        // console.log(data)
+        
+        svg.selectAll("circle")
+            .data(europe)
+            .enter()
+            .append("circle")
+            .attr("cx", function (d) { return d.x })
+            .attr("cy", function (d) { return d.y })
+            .attr("r", function(d){
+                if(d.population < 1000000){
+                    return 4;
+                } else {
+                    return 8;
+                }
+            })
+           
+            
+            
+
+        svg.selectAll("text")
+            .data(data)
+            .enter()
+            .append("text")
+            .text(function (d) {
+                if (d.population > 1000000) {
+                    return d.country
+                } else {
+                    return;
+                }
+            })
+            .attr("x", function(d){
+                return d.x ;
+            })
+            .attr("y", function (d) {
+                return d.y - 15;
+            })
+            // .attr("textLength", 50)
+            .attr("text-anchor", "middle")
+            // .attr("padding", 30)
+            .attr("font-size", 11)
+
+            
+
+
+
+    });// end of scatter plot csv parsing 
+
+
+    d3.csv('buildings.csv', d => {
+        return {
+            ...d, // spread operator
+            completed: +d.completed,
+            floors: +d.floors,
+            height_ft: +d.height_ft,
+            height_m: +d.height_m,
+            height_px: +d.height_px,
+        }
+    }).then(data => {
+        console.log('buildings', data);
+
+
+
+
+        let height_sort = data.sort(function(a, b){
+            return b.height_ft - a.height_ft;
+        })
+        console.log(height_sort);
+
+
+
+        const width = 600;
+        const height = 500;
+        const svg = d3.select('.bar-chart')
+            .append('svg')
+            .attr('width', width)
+            .attr('height', height)
+
+        svg.selectAll("rect")
+            .data(height_sort)
+            .enter()
+            .append("rect")
+            .attr("class", "bars")
+            .attr("width", function(d) {
+                return d.height_px})
+            .attr("x", 250)
+            .attr("y", function(d, i){
+                return i*40;
+            })
+            .attr("fill", "pink")
+            .attr("height", 35)
+            
+
+        svg.selectAll("text")
+            .data(height_sort)
+            .enter()
+            .append("text")            
+            .attr("class", "y-label")
+            .attr("text-anchor", "left")
+            .text(function (d) {
+                return d.building;
+            })
+            .attr("x", 0)
+            .attr("y", function (d, i) {
+                return (i + 1) * 40 - 17;
+            })
+        
+        svg.selectAll("rect")
+            .select("text")
+            .data(height_sort)
+            .enter()
+            .append("text")
+            .text(function (d, i) {
+                return d.height_ft;
+            })
+            .attr("x", function (d, i) {
+                return 245 + d.height_px;
+            })
+            .attr("y", function (d, i) {
+                return (i + 1) * 40 - 17;
+            })
+            // .attr("textLength", 20)
+            .attr("text-anchor", "end")
+            .attr("fill", "white")
+
+
+    // add a function to update a photo next to it when the bars are clicked
+    function click_bars(){
+
+    }
+            
+        
+        
+
+
+    }); // end of buildings.csv parsing
+    
+
+    
+
+</script>
+
+        
 
 
 </html>
